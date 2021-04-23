@@ -58,7 +58,6 @@ jobs:
     - run: |-
         gcloud container clusters get-credentials "${{secrets.GCP_PROJECT_NAME}}" --zone "${{secrets.GCP_PROJECT_REGION}}"
     - run: |-
-        kubectl apply -f infra/*
-            docker-compose -f docker-compose-prod.yaml push
+        kubectl apply -f infra/mini-beam-depl.yaml
     - run: |-
         kubectl rollout restart deployment/mini-beam
