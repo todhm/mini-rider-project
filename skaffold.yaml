@@ -1,0 +1,22 @@
+apiVersion: skaffold/v2beta6
+kind: Config
+metadata:
+  name: scooter-challenge
+build:
+  artifacts:
+  - image: beam-postgres
+    context: postgres
+  - image: mini-beam-nginx
+    context: nginx
+  - image: mini-beam-back
+    context: mini-beam-back
+    docker:
+      dockerfile: Dockerfile.prod
+  - image: mini-beam-front
+    context: mini-beam-front
+    docker:
+      dockerfile: Dockerfile.prod
+deploy:
+  kubectl:
+    manifests:
+      - ./infra/*

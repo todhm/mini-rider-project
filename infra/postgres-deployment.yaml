@@ -1,0 +1,60 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          env:
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+          envFrom:
+          - configMapRef:
+              name: postgres-configmap
+          image: beam-postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgrespv
+      restartPolicy: Always
+      volumes:
+        - name: postgrespv
+          persistentVolumeClaim:
+            claimName: postgres-storage
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-srv
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: db
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  

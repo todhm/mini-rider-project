@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-configmap
+data:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+  DB_HOST: "postgres-srv"
+  DB_NAME: "scooter"
+  TEST_DB_NAME: "testdb"
+  DB_URL: "postgresql://postgres:postgres@postgres-srv:5432/scooter"
+  TEST_DB_URL: "postgresql://postgres:postgres@postgres-srv:5432/testdb"

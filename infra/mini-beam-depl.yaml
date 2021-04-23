@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mini-beam
+spec:
+  selector:
+    matchLabels:
+      app: mini-beam
+  template:
+    metadata:
+      labels:
+        app: mini-beam
+    spec:
+      containers:
+      - name: mini-beam-back
+        image: fidelkang/mini-beam-back
+        envFrom:
+        - configMapRef:
+            name: postgres-configmap
+      - name: mini-beam-front
+        image: fidelkang/mini-beam-front
+        envFrom:
+        - secretRef:
+            name: google-secret
+        - configMapRef:
+            name: service-map
+      - name: mini-beam-nginx
+        image: fidelkang/mini-beam-nginx
+        envFrom:
+        - configMapRef:
+            name: service-map
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: mini-beam-srv
+spec:
+  selector:
+    app: mini-beam
+  ports:
+    - name: beam-port
+      protocol: TCP 
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+  loadBalancerIP: "35.187.255.137"

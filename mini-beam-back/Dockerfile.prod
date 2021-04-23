@@ -1,0 +1,37 @@
+FROM python:3.8
+
+# set working directory
+RUN addgroup --system app && adduser --system --group app
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/web
+RUN mkdir $APP_HOME
+WORKDIR $APP_HOME
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV ENVIRONMENT prod
+ENV TESTING 0
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update \
+  && apt-get -y install netcat gcc \
+  && apt-get clean
+
+# install python dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+# add entrypoint.sh
+COPY . .
+RUN chown -R app:app $APP_HOME
+
+COPY ./entrypoint.sh .
+RUN chmod +x /home/app/web/entrypoint.sh
+
+# run entrypoint.sh
+ENTRYPOINT ["sh", "/home/app/web/entrypoint.sh"]
+CMD gunicorn --log-level info --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app

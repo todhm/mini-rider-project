@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+
+  mini-beam-back:
+    image: fidelkang/mini-beam-back
+    build:
+      context: ./mini-beam-back
+      dockerfile: Dockerfile.prod
+    
+  mini-beam-front:
+    image: fidelkang/mini-beam-front
+    build:
+      context: ./mini-beam-front
+      dockerfile: Dockerfile.prod
+    
+  nginx:
+    image: fidelkang/mini-beam-nginx
+    build:
+      context: ./nginx
+  

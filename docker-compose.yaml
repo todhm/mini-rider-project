@@ -1,0 +1,73 @@
+version: '3.8'
+services:
+
+  mini-beam-back:
+    image: mini-beam-back
+    build:
+      context: ./mini-beam-back
+      dockerfile: Dockerfile
+    volumes:
+      - './mini-beam-back:/usr/src/app'
+    command:  uvicorn main:app --reload --host 0.0.0.0 --port 8000 --log-level debug
+    ports:
+      - 8000:8000
+    env_file:
+      - ./envfiles/.postgres.env
+    depends_on:
+      - postgres
+    networks:
+      - backend
+      - service
+
+  mini-beam-front:
+    image: mini-beam-front
+    build:
+      context: ./mini-beam-front
+    volumes:
+      - './mini-beam-front:/app'
+      - /app/node_modules
+    ports:
+      - 3000:3000
+    env_file:
+      - ./envfiles/.google.env
+      - ./envfiles/.service_map.env
+    networks:
+      - service
+
+  postgres:
+    image: beam-postgres
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    command: postgres -c 'max_connections=300'
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./envfiles/.postgres.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  nginx:
+    image: mini-beam-nginx
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - ./envfiles/.service_map.env
+    depends_on:
+      - mini-beam-back
+      - mini-beam-front
+    networks:
+      - service
+      
+volumes:
+  postgres-data:
+
+networks:
+  backend:
+  service:
+  

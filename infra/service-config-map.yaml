@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-map
+data:
+  BACKEND_API: "http://35.187.255.137/api"
+  BACKEND_SERVER_API: "http://localhost:8000"
+  FRONTEND_SERVER_API: "http://localhost:3000"
+  DEFAULT_HOST_NAME: "35.187.255.137"

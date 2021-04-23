@@ -1,0 +1,64 @@
+name: Continuous Integration and Delivery
+
+on: [push]
+
+env:
+  IMAGE: fidelkang/mini-beam-back
+
+jobs:
+  test:
+    name: Test Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout master
+        uses: actions/checkout@v2.3.4
+      - name: Build the stack
+        run: docker-compose up -d
+      - name: Pytest
+        run: docker-compose exec -T mini-beam-back python -m pytest .
+      - name: Flake8
+        run: docker-compose exec -T mini-beam-back python -m flake8 .
+      - name: Black
+        run: docker-compose exec -T mini-beam-back python -m black . --check
+      - name: isort
+        run: docker-compose exec -T mini-beam-back python -m isort . --check-only
+      - name: Down development containers
+        run: docker-compose down
+      - name: build production containers
+        run: docker-compose -f docker-compose-prod.yaml build
+      - name: push production containers
+        run: docker-compose -f docker-compose-prod.yaml build
+  deploy:
+    name: Deploy Actions
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Install gcloud
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+    - run: |-
+        gcloud --quiet auth configure-docker
+    - run: |-
+        gcloud container clusters get-credentials "${{secrets.GCP_PROJECT_NAME}}" --zone "${{secrets.GCP_PROJECT_REGION}}"
+    - run: |-
+        kubectl apply -f infra/*
+            docker-compose -f docker-compose-prod.yaml push
+    - run: |-
+        kubectl rollout restart deployment/mini-beam
