@@ -1,0 +1,9 @@
+secretGenerator:
+- name: postgres-secret
+  envs:
+  - secrets/.postgres.secret.env
+- name: google-secret
+  envs:
+  - secrets/.google.secret.env
+generatorOptions:
+ disableNameSuffixHash: true

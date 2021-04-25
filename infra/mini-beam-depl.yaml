@@ -15,8 +15,8 @@ spec:
       - name: mini-beam-back
         image: fidelkang/mini-beam-back
         envFrom:
-        - configMapRef:
-            name: postgres-configmap
+        - secretRef:
+            name: postgres-secret
       - name: mini-beam-front
         image: fidelkang/mini-beam-front
         envFrom:

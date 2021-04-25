@@ -6,8 +6,8 @@ ifeq (deploy,$(firstword $(MAKECMDGOALS)))
 endif
 
 deploy:
+	kustomize build . | kubectl apply -f -
 	bash deploy.sh $(RUN_ARGS)
-
 init:
 	docker-compose up -d --build
 	docker-compose exec mini-beam-back make preparedata
